@@ -65,6 +65,100 @@ def build_server():
         }
 
     @mcp.tool
+    def emit_hyperlink(url: str, text: str) -> dict:
+        """Emit an OSC 8 hyperlink. Falls back to plain text if unsupported."""
+        caps = rck.detect()
+        try:
+            bytes_ = rck.run_link(url, text)
+        except Exception as e:
+            return {"rendered": False, "reason": str(e), "fallback_text": f"{text} ({url})"}
+        return {
+            "rendered": caps.hyperlinks,
+            "text": bytes_.decode("utf-8", errors="replace"),
+            "capabilities": caps.__dict__,
+        }
+
+    @mcp.tool
+    def copy_to_clipboard(content: str) -> dict:
+        """Copy `content` to the system clipboard via OSC 52."""
+        caps = rck.detect()
+        if not caps.clipboard:
+            return {
+                "rendered": False,
+                "reason": f"terminal '{caps.terminal}' does not expose clipboard",
+                "fallback_text": content,
+                "capabilities": caps.__dict__,
+            }
+        try:
+            bytes_ = rck.run_copy(content)
+        except Exception as e:
+            return {"rendered": False, "reason": str(e), "fallback_text": content}
+        return {
+            "rendered": True,
+            "text": bytes_.decode("utf-8", errors="replace"),
+            "capabilities": caps.__dict__,
+        }
+
+    @mcp.tool
+    def task_marker(phase: Literal["start", "end"], exit_code: int = 0, task_id: str = "") -> dict:
+        """Emit an OSC 133 task marker. `phase` is 'start' or 'end'."""
+        caps = rck.detect()
+        if not caps.task_markers:
+            return {
+                "rendered": False,
+                "reason": f"terminal '{caps.terminal}' does not support OSC 133",
+                "fallback_text": "",
+                "capabilities": caps.__dict__,
+            }
+        try:
+            bytes_ = rck.run_task_marker(phase, exit_code=exit_code, task_id=task_id or None)
+        except Exception as e:
+            return {"rendered": False, "reason": str(e), "fallback_text": ""}
+        return {
+            "rendered": True,
+            "text": bytes_.decode("utf-8", errors="replace"),
+            "capabilities": caps.__dict__,
+        }
+
+    @mcp.tool
+    def ask(question: str) -> dict:
+        """Prompt the user with a yes/no confirm (alt-screen + kitty-kbd).
+
+        Returns {'answered': bool, 'value': bool | None}. `value` is None on cancel.
+        """
+        try:
+            code, _out = rck.run_ask(question)
+        except Exception as e:
+            return {"answered": False, "value": None, "error": str(e)}
+        if code == 0:
+            return {"answered": True, "value": True}
+        if code == 1:
+            return {"answered": True, "value": False}
+        return {"answered": False, "value": None}
+
+    @mcp.tool
+    def pick(prompt: str, choices: list[str]) -> dict:
+        """Prompt the user to pick one of `choices`. Returns the selection."""
+        try:
+            code, out = rck.run_pick(prompt, choices)
+        except Exception as e:
+            return {"answered": False, "value": None, "error": str(e)}
+        if code == 0:
+            return {"answered": True, "value": out}
+        return {"answered": False, "value": None}
+
+    @mcp.tool
+    def input_line(prompt: str) -> dict:
+        """Prompt the user for a single line of input."""
+        try:
+            code, out = rck.run_input(prompt)
+        except Exception as e:
+            return {"answered": False, "value": None, "error": str(e)}
+        if code == 0:
+            return {"answered": True, "value": out}
+        return {"answered": False, "value": None}
+
+    @mcp.tool
     def emit_panel(
         title: str,
         body: str,

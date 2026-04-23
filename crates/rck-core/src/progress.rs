@@ -1,19 +1,17 @@
 //! One-shot progress-bar rendering.
 
+use crate::spans::{render_spans, Span};
 use crate::Capabilities;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
 pub enum ProgressStyle {
     /// Unicode heavy-block + truecolor gradient when available; ASCII `#` otherwise.
+    #[default]
     Blocks,
     /// Always ASCII `#` / `-`.
     Ascii,
-}
-
-impl Default for ProgressStyle {
-    fn default() -> Self { ProgressStyle::Blocks }
 }
 
 /// Render a single progress bar line. `ratio` is clamped to `[0.0, 1.0]`.
@@ -62,6 +60,21 @@ pub fn emit_progress<W: Write>(
     Ok(())
 }
 
+/// Same as [`emit_progress`] but accepts a span-based label (mix of plain
+/// text + OSC 8 hyperlinks). Falls back to plain text on non-hyperlink
+/// terminals.
+pub fn emit_progress_spans<W: Write>(
+    out: &mut W,
+    caps: &Capabilities,
+    ratio: f32,
+    style: ProgressStyle,
+    label: &[Span],
+) -> anyhow::Result<()> {
+    let rendered = render_spans(caps, label);
+    let label_opt = if rendered.is_empty() { None } else { Some(rendered.as_str()) };
+    emit_progress(out, caps, ratio, style, label_opt)
+}
+
 fn gradient(t: f32) -> (u8, u8, u8) {
     // 0.0 → red (229, 62, 62), 0.5 → amber (246, 173, 85), 1.0 → green (72, 187, 120)
     let lerp = |a: f32, b: f32, t: f32| -> u8 { (a + (b - a) * t).round().clamp(0.0, 255.0) as u8 };
@@ -83,6 +96,8 @@ mod tests {
         Capabilities {
             graphics, sixel: false, truecolor, unicode_width,
             terminal: "test".into(), is_tty: true,
+            hyperlinks: false, clipboard: false, task_markers: false,
+            kitty_keyboard: false, in_tmux: false,
         }
     }
 

@@ -21,6 +21,16 @@ pub struct Capabilities {
     pub terminal: String,
     /// Whether stdout is a TTY at detection time.
     pub is_tty: bool,
+    /// Supports OSC 8 hyperlinks.
+    pub hyperlinks: bool,
+    /// Supports OSC 52 clipboard write.
+    pub clipboard: bool,
+    /// Supports OSC 133 semantic prompt markers.
+    pub task_markers: bool,
+    /// Supports kitty keyboard protocol progressive flags.
+    pub kitty_keyboard: bool,
+    /// Running inside tmux (DCS-passthrough wrapping applies).
+    pub in_tmux: bool,
 }
 
 impl Capabilities {
@@ -32,6 +42,11 @@ impl Capabilities {
             unicode_width: 1,
             terminal: "unknown".into(),
             is_tty: false,
+            hyperlinks: false,
+            clipboard: false,
+            task_markers: false,
+            kitty_keyboard: false,
+            in_tmux: false,
         }
     }
 }
@@ -81,7 +96,25 @@ pub fn detect() -> Capabilities {
         graphics = false;
     }
 
-    Capabilities { graphics, sixel, truecolor, unicode_width, terminal, is_tty }
+    // Modern-terminal OSC features: hyperlinks (OSC 8), task markers (OSC 133),
+    // kitty-kbd are supported by the same family as graphics. Apple Terminal
+    // supports NONE of them. OSC 52 clipboard is more widely supported.
+    let modern = matches!(terminal.as_str(), "ghostty" | "kitty" | "wezterm" | "iterm2");
+    let apple = term_program == "Apple_Terminal";
+    let hyperlinks = modern && !apple;
+    let task_markers = modern && !apple;
+    let kitty_keyboard = matches!(terminal.as_str(), "ghostty" | "kitty" | "wezterm");
+    // Clipboard write is broadly supported — add konsole + Apple Terminal (with a tiny limit).
+    let clipboard = modern
+        || matches!(terminal.as_str(), "konsole")
+        || apple;
+
+    let in_tmux = std::env::var("TMUX").is_ok();
+
+    Capabilities {
+        graphics, sixel, truecolor, unicode_width, terminal, is_tty,
+        hyperlinks, clipboard, task_markers, kitty_keyboard, in_tmux,
+    }
 }
 
 /// Send a minimal kitty-graphics query and look for the `OK` / error response.
@@ -218,6 +251,11 @@ mod tests {
         let c = Capabilities::plain();
         assert!(!c.graphics);
         assert!(!c.sixel);
+        assert!(!c.hyperlinks);
+        assert!(!c.clipboard);
+        assert!(!c.task_markers);
+        assert!(!c.kitty_keyboard);
+        assert!(!c.in_tmux);
         assert_eq!(c.unicode_width, 1);
     }
 

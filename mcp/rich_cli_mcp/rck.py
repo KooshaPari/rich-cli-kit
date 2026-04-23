@@ -25,6 +25,11 @@ class Capabilities:
     unicode_width: int
     terminal: str
     is_tty: bool
+    hyperlinks: bool = False
+    clipboard: bool = False
+    task_markers: bool = False
+    kitty_keyboard: bool = False
+    in_tmux: bool = False
 
     @classmethod
     def plain(cls) -> "Capabilities":
@@ -69,6 +74,11 @@ def detect() -> Capabilities:
         unicode_width=int(data.get("unicode_width", 1)),
         terminal=str(data.get("terminal", "unknown")),
         is_tty=bool(data.get("is_tty")),
+        hyperlinks=bool(data.get("hyperlinks", False)),
+        clipboard=bool(data.get("clipboard", False)),
+        task_markers=bool(data.get("task_markers", False)),
+        kitty_keyboard=bool(data.get("kitty_keyboard", False)),
+        in_tmux=bool(data.get("in_tmux", False)),
     )
 
 
@@ -100,3 +110,61 @@ def run_panel(title: str, body: str, border: str = "rounded") -> bytes:
     proc = subprocess.run(args, input=body.encode("utf-8"), capture_output=True, timeout=5)
     proc.check_returncode()
     return proc.stdout
+
+
+def run_link(url: str, text: str) -> bytes:
+    bin_ = find_rck()
+    proc = subprocess.run([bin_, "link", url, text], capture_output=True, timeout=5)
+    proc.check_returncode()
+    return proc.stdout
+
+
+def run_copy(content: str) -> bytes:
+    bin_ = find_rck()
+    proc = subprocess.run(
+        [bin_, "copy", "--stdin"],
+        input=content.encode("utf-8"),
+        capture_output=True,
+        timeout=5,
+    )
+    proc.check_returncode()
+    return proc.stdout
+
+
+def run_task_marker(phase: str, exit_code: int = 0, task_id: Optional[str] = None) -> bytes:
+    """phase ∈ {'start', 'end'}."""
+    bin_ = find_rck()
+    if phase == "start":
+        args = [bin_, "task-start"]
+        if task_id:
+            args += ["--id", task_id]
+    elif phase == "end":
+        args = [bin_, "task-end", "--exit", str(exit_code)]
+    else:
+        raise ValueError(f"unknown phase: {phase}")
+    proc = subprocess.run(args, capture_output=True, timeout=5)
+    proc.check_returncode()
+    return proc.stdout
+
+
+def run_ask(question: str, timeout: float = 120.0) -> tuple[int, str]:
+    """Run `rck ask` interactively. Returns (exit_code, stdout).
+
+    Exit code: 0 = yes, 1 = no, 2 = cancelled.
+    When stdin is not a TTY, the child uses its plain-stdin fallback.
+    """
+    bin_ = find_rck()
+    proc = subprocess.run([bin_, "ask", question], capture_output=True, timeout=timeout)
+    return proc.returncode, proc.stdout.decode("utf-8", errors="replace")
+
+
+def run_pick(prompt: str, choices: list[str], timeout: float = 120.0) -> tuple[int, str]:
+    bin_ = find_rck()
+    proc = subprocess.run([bin_, "pick", prompt, *choices], capture_output=True, timeout=timeout)
+    return proc.returncode, proc.stdout.decode("utf-8", errors="replace").rstrip("\n")
+
+
+def run_input(prompt: str, timeout: float = 120.0) -> tuple[int, str]:
+    bin_ = find_rck()
+    proc = subprocess.run([bin_, "input", prompt], capture_output=True, timeout=timeout)
+    return proc.returncode, proc.stdout.decode("utf-8", errors="replace").rstrip("\n")

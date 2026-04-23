@@ -108,20 +108,20 @@ Degradation path: if `TMUX` is set, every APC/OSC emit must DCS-wrap (`ESC P tmu
 
 ## 5. Proposed v0.2 Roadmap (8–12 items)
 
-| # | Item | Deps | Rough LOC |
-|---|---|---|---|
-| 1 | `rck link <url> <text>` — OSC 8 emitter | none | 40 |
-| 2 | `rck copy` (stdin → OSC 52) | none | 60 |
-| 3 | `rck mark start|end [--exit N]` — OSC 133 A/B/C/D | shell detection | 80 |
-| 4 | `rck ask`, `rck pick`, `rck input` — alt-screen + kitty-kbd | kbd probe, term state restore | 450 |
-| 5 | Focus-aware `rck notify --defer` (CSI ?1004 + OSC 9) | signal handler, async listener | 180 |
-| 6 | Tmux DCS-passthrough wrapper in rck-core emit layer | detect `TMUX` | 60 |
-| 7 | Grapheme-correct width for panel rendering | `unicode-width` + `icu_segmenter` or vendored equiv | 120 |
-| 8 | XTVERSION-based capability cache (TTL 60s) | stdin poll infra already exists | 90 |
-| 9 | `rck title set/restore` + cursor-shape hints | none | 40 |
-| 10 | `rck shader install <name>` — ship focus-vignette + two ambients | bundled assets | 120 |
-| 11 | Styled-underline helpers (`rck annotate --curly --color red`) | terminfo | 70 |
-| 12 | MCP surface for all of the above (`rich.link`, `rich.copy`, `rich.ask`, `rich.mark`, `rich.notify`, `rich.annotate`) | FastMCP existing | 200 |
+| # | Item | Status | Deps | Rough LOC |
+|---|---|---|---|---|
+| 1 | `rck link <url> <text>` — OSC 8 emitter | ✅ v0.2 | none | 40 |
+| 2 | `rck copy` (stdin → OSC 52) | ✅ v0.2 | none | 60 |
+| 3 | `rck task-start / task-end [--exit N]` — OSC 133 A/B/C/D | ✅ v0.2 (renamed from `mark`) | shell detection | 80 |
+| 4 | `rck ask`, `rck pick`, `rck input` — alt-screen + kitty-kbd | ✅ v0.2 | kbd probe, term state restore | 450 |
+| 5 | Focus-aware `rck notify --defer` (CSI ?1004 + OSC 9) | ⏳ deferred to v0.3 | signal handler, async listener | 180 |
+| 6 | Tmux DCS-passthrough wrapper in rck-core emit layer | ✅ v0.2 (gated at `emit`) | detect `TMUX` | 60 |
+| 7 | Grapheme-correct width for panel rendering | ✅ v0.2 | `unicode-width` + `unicode-segmentation` | 120 |
+| 8 | XTVERSION-based capability cache (TTL 60s) | ⏳ deferred to v0.3 | stdin poll infra already exists | 90 |
+| 9 | `rck title set/restore` + cursor-shape hints | partial (title emitted on `task-start --id`) | none | 40 |
+| 10 | `rck shader install <name>` — ship focus-vignette + two ambients | ✅ v0.2 (`focus-vignette`, `progress-pulse`, `agent-active`) | bundled assets | 120 |
+| 11 | Styled-underline helpers (`rck annotate --curly --color red`) | ⏳ deferred to v0.3 | terminfo | 70 |
+| 12 | MCP surface for all of the above (`rich.emit_hyperlink`, `rich.copy_to_clipboard`, `rich.task_marker`, `rich.ask`, `rich.pick`, `rich.input_line`) | ✅ v0.2 | FastMCP existing | 200 |
 
 Total: ~1,500 LOC Rust + 200 LOC Python MCP wrappers. Dependencies add: `unicode-width`, `icu_segmenter` (or `unicode-segmentation`), maybe `crossterm` for kbd input decode (or hand-roll to stay minimal).
 

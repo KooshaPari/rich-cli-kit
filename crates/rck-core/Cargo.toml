@@ -14,3 +14,5 @@ base64.workspace = true
 image.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+unicode-width.workspace = true
+unicode-segmentation.workspace = true

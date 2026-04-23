@@ -1,18 +1,18 @@
-//! Box-drawn status panels.
+//! Box-drawn status panels with grapheme-correct width calculation and
+//! optional inline OSC-8 hyperlinks via [`Span`].
 
+use crate::spans::{render_spans, spans_width, Span};
+use crate::width::visible_width;
 use crate::Capabilities;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum BorderStyle {
+    #[default]
     Rounded,
     Square,
     Ascii,
-}
-
-impl Default for BorderStyle {
-    fn default() -> Self { BorderStyle::Rounded }
 }
 
 struct Glyphs {
@@ -29,8 +29,7 @@ fn glyphs(caps: &Capabilities, style: BorderStyle) -> Glyphs {
     }
 }
 
-/// Emit a status panel. `lines` are drawn one per row inside the frame.
-/// Title is truncated/padded to fit.
+/// Emit a status panel from plain string lines (back-compat entry point).
 pub fn emit_panel<W: Write>(
     out: &mut W,
     caps: &Capabilities,
@@ -38,30 +37,44 @@ pub fn emit_panel<W: Write>(
     lines: &[&str],
     border_style: BorderStyle,
 ) -> anyhow::Result<()> {
+    let rows: Vec<Vec<Span>> = lines
+        .iter()
+        .map(|l| vec![Span::text((*l).to_string())])
+        .collect();
+    emit_panel_spans(out, caps, title, &rows, border_style)
+}
+
+/// Emit a status panel whose body rows are sequences of spans (text + links).
+pub fn emit_panel_spans<W: Write>(
+    out: &mut W,
+    caps: &Capabilities,
+    title: &str,
+    rows: &[Vec<Span>],
+    border_style: BorderStyle,
+) -> anyhow::Result<()> {
     let g = glyphs(caps, border_style);
 
-    // Compute inner width: max(title, longest line) + 2 padding chars.
-    let content_width = std::cmp::max(
-        visible_width(title),
-        lines.iter().map(|l| visible_width(l)).max().unwrap_or(0),
-    );
+    let title_w = visible_width(title);
+    let rows_w = rows.iter().map(|s| spans_width(s)).max().unwrap_or(0);
+    let content_width = std::cmp::max(title_w, rows_w);
     let inner = content_width.max(12);
     let total = inner + 2; // one pad space on each side
 
     // Top: ╭─ title ──╮
     write!(out, "{}{}", g.tl, g.h)?;
     let title_segment = format!(" {} ", title);
-    let title_w = visible_width(&title_segment);
-    let remaining = total.saturating_sub(1 + title_w);
+    let title_seg_w = visible_width(&title_segment);
+    let remaining = total.saturating_sub(1 + title_seg_w);
     out.write_all(title_segment.as_bytes())?;
     for _ in 0..remaining { write!(out, "{}", g.h)?; }
     writeln!(out, "{}", g.tr)?;
 
     // Body rows.
-    for line in lines {
-        let w = visible_width(line);
+    for spans in rows {
+        let w = spans_width(spans);
+        let rendered = render_spans(caps, spans);
         let pad = inner.saturating_sub(w);
-        writeln!(out, "{} {}{} {}", g.v, line, " ".repeat(pad), g.v)?;
+        writeln!(out, "{} {}{} {}", g.v, rendered, " ".repeat(pad), g.v)?;
     }
 
     // Bottom.
@@ -69,22 +82,6 @@ pub fn emit_panel<W: Write>(
     for _ in 0..total { write!(out, "{}", g.h)?; }
     writeln!(out, "{}", g.br)?;
     Ok(())
-}
-
-/// Rough visible-width heuristic: counts codepoints, ignoring SGR escape sequences.
-/// Adequate for the strings we render; not a full wcwidth implementation.
-fn visible_width(s: &str) -> usize {
-    let mut in_esc = false;
-    let mut n = 0usize;
-    for ch in s.chars() {
-        if in_esc {
-            if ch.is_ascii_alphabetic() { in_esc = false; }
-            continue;
-        }
-        if ch == '\x1b' { in_esc = true; continue; }
-        n += 1;
-    }
-    n
 }
 
 #[cfg(test)]
@@ -96,6 +93,8 @@ mod tests {
         Capabilities {
             graphics: false, sixel: false, truecolor: false,
             unicode_width, terminal: "test".into(), is_tty: true,
+            hyperlinks: false, clipboard: false, task_markers: false,
+            kitty_keyboard: false, in_tmux: false,
         }
     }
 
@@ -120,5 +119,35 @@ mod tests {
         assert!(s.contains("+"));
         assert!(s.contains("-"));
         assert!(!s.contains("╭"));
+    }
+
+    #[test]
+    fn emoji_line_aligns_with_grapheme_width() {
+        // The poo emoji occupies two cells; right border should remain aligned.
+        let c = caps(2);
+        let mut buf = Vec::new();
+        emit_panel(&mut buf, &c, "t", &["hi \u{1f4a9}"], BorderStyle::Square).unwrap();
+        let s = String::from_utf8(buf).unwrap();
+        // All body rows should end with the vertical glyph followed by newline.
+        let body_lines: Vec<&str> = s.lines().filter(|l| l.starts_with("│")).collect();
+        assert!(!body_lines.is_empty());
+        for l in body_lines {
+            assert!(l.ends_with("│"), "unaligned body row: {:?}", l);
+        }
+    }
+
+    #[test]
+    fn spans_with_link_render() {
+        let mut c = caps(2);
+        c.hyperlinks = true;
+        let rows = vec![vec![
+            Span::text("see "),
+            Span::link("https://x", "docs"),
+        ]];
+        let mut buf = Vec::new();
+        emit_panel_spans(&mut buf, &c, "t", &rows, BorderStyle::Square).unwrap();
+        let s = String::from_utf8(buf).unwrap();
+        assert!(s.contains("\x1b]8;;https://x"));
+        assert!(s.contains("docs"));
     }
 }

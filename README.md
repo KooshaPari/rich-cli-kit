@@ -29,6 +29,17 @@ cargo build --release
 ./target/release/rck progress 0.42 --label "building"
 ./target/release/rck panel --title status --file <(echo -e "build: ok\ntests: 10 passed")
 ./target/release/rck image path/to/screenshot.png
+
+# v0.2 additions
+./target/release/rck link https://ghostty.org "Ghostty"          # OSC 8 hyperlink
+echo "result" | ./target/release/rck copy --stdin                # OSC 52 clipboard
+./target/release/rck task-start --id build                       # OSC 133 A + C
+./target/release/rck task-end --exit 0                           # OSC 133 D
+./target/release/rck ask "Proceed with deploy?"                  # yes/no (exit 0/1/2)
+./target/release/rck pick "Pick env" dev staging prod            # arrow-key select
+./target/release/rck input "Ticket number"                       # single-line
+./target/release/rck shader install focus-vignette               # Ghostty shader pack
+
 ./target/release/rck demo
 
 # MCP server
@@ -36,6 +47,20 @@ cd mcp
 pip install -e .
 rich-cli-mcp                 # stdio transport (for Claude Code / Codex)
 ```
+
+## tmux passthrough
+
+All OSC / APC sequences (image, hyperlink, clipboard, task markers, panel
+links, progress labels) are automatically DCS-wrapped when `$TMUX` is set, so
+tmux forwards them to the outer terminal. This only works if you enable
+passthrough in your tmux config:
+
+```
+# ~/.tmux.conf
+set -g allow-passthrough on
+```
+
+Without that line, tmux drops every wrapped sequence silently.
 
 ## Terminal support
 
@@ -79,8 +104,8 @@ a text summary.
 ## Tests
 
 ```bash
-cargo test --workspace     # 10 Rust tests (encoder byte-level checks + detect smoke)
-cd mcp && pytest            # 5 Python tests (subprocess wrapper + server build)
+cargo test --workspace     # 44 Rust tests (encoder, wrap, osc8, osc52, osc133, width, spans, shader, interactive)
+cd mcp && pytest            # 11 Python tests (subprocess wrapper + server build + new v0.2 tools)
 ```
 
 `rck demo` must be run interactively in a kitty-graphics terminal to

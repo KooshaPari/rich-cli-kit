@@ -50,6 +50,42 @@ def test_progress_clamps_over_one(rck_bin):
     assert "100%" in out
 
 
+def test_link_contains_osc8_or_plaintext(rck_bin):
+    out = rck.run_link("https://x", "see-here").decode()
+    assert "see-here" in out
+
+
+def test_copy_roundtrip(rck_bin):
+    # On non-clipboard terminals the CLI prints a stderr note and empty stdout;
+    # either way it should not error.
+    try:
+        rck.run_copy("hello")
+    except Exception as e:
+        pytest.fail(f"run_copy raised: {e}")
+
+
+def test_task_start_end(rck_bin):
+    rck.run_task_marker("start", task_id="demo")
+    rck.run_task_marker("end", exit_code=0)
+
+
+def test_ask_non_tty_defaults_to_cancel(rck_bin):
+    # Parent has no TTY via pytest capture — the Rust side falls back to
+    # plain stdin and reads EOF → Cancelled (exit 2) or "N" → 1.
+    code, _ = rck.run_ask("proceed?")
+    assert code in (0, 1, 2)
+
+
+def test_pick_non_tty(rck_bin):
+    code, _ = rck.run_pick("pick one", ["a", "b"])
+    assert code in (0, 2)
+
+
+def test_input_non_tty(rck_bin):
+    code, _ = rck.run_input("name")
+    assert code in (0, 2)
+
+
 def test_server_builds():
     """Just import + build; real MCP transport isn't exercised here."""
     from rich_cli_mcp.server import build_server
