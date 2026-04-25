@@ -112,6 +112,12 @@ cd mcp && pytest            # 11 Python tests (subprocess wrapper + server build
 visually verify the image path; CI can only assert the byte-level encoder
 output.
 
+## Related Phenotype Projects
+
+- **[cheap-llm-mcp](../cheap-llm-mcp/)** — MCP-first agent framework consuming rich-cli-kit output
+- **[MCPForge](../MCPForge/)** — Language server integration with terminal rendering
+- **[PhenoMCP](../PhenoMCP/)** — MCP server collection exposing rich-cli capabilities
+
 ## Phenotype scripting policy
 
 Per `repos/docs/governance/scripting_policy.md`, this project is Rust-first.
