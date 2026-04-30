@@ -10,7 +10,7 @@ name = "rck"
 path = "src/main.rs"
 
 [dependencies]
-rck-core = { path = "../rck-core" }
+rck-core = { path = "../rck-core", version = "0.1.0" }
 anyhow.workspace = true
 clap.workspace = true
 serde.workspace = true
