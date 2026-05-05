@@ -42,3 +42,4 @@ coverage/
 *.tmp
 *.bak
 *.orig
+target/
