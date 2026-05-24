@@ -1,32 +1,24 @@
-# rich-cli-kit — AGENTS.md
+# AGENTS.md — rich-cli-kit
 
-## Project Overview
+Phenotype repository
 
-Rust CLI toolkit — rich console output utilities for the command line.
+## Quick Links
 
-## Stack
+- **Local CLAUDE.md:** See `CLAUDE.md` in this repository for project-specific guidance
+- **Phenotype org governance:** `/Users/kooshapari/CodeProjects/Phenotype/repos/CLAUDE.md`
+- **Global agent guidance:** `~/.claude/AGENTS.md`
+- **AgilePlus work tracking:** `cd /repos/AgilePlus && agileplus <command>`
 
-- Language: Rust (per GitHub language detection)
-- Build system: Cargo (verify `Cargo.toml`)
-- Package manager: Cargo
+## Key Workflows
 
-## Key Commands
+1. **Before implementing:** Check AgilePlus for existing specs
+2. **Quality gates:** Run linters, tests, and docs validation where configured
+3. **Integration:** Commit to canonical repo after quality gates pass
 
-```bash
-# Verify project structure
-ls -la Cargo.toml Cargo.lock 2>/dev/null
+## Project-Specific Gotchas
 
-# Build
-cargo build --release
+See CLAUDE.md for language stack, build commands, and testing requirements.
 
-# Test
-cargo test
+---
 
-# Lint
-cargo clippy
-```
-
-## Notes
-
-- **Active** — verify language and build system locally before running commands
-- CLI tool — likely has binary with `[[bin]]` entries
+**Parent contract:** Extends Phenotype-org governance. See `CLAUDE.md` and parent `AGENTS.md` for complete operating procedures.
