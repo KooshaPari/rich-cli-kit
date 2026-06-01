@@ -124,6 +124,7 @@ pub fn detect() -> Capabilities {
 ///
 /// We expect either `ESC _ G i=31;OK ESC \` (graphics supported) or just the
 /// primary-DA response (no graphics).
+#[cfg(unix)]
 fn query_kitty_graphics(timeout: Duration) -> io::Result<bool> {
     use std::os::fd::AsRawFd;
 
