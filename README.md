@@ -20,6 +20,23 @@ kitty, WezTerm), and gracefully degraded to plain ASCII otherwise.
 Built for rich-CLI-capable agents (Claude Code, Codex, forge) that need a
 one-shot way to render pretty output without bringing in a full TUI stack.
 
+## Installation
+
+Install the `rck` binary straight from Git with Cargo (the binary lives in the
+`rck-cli` workspace crate):
+
+```bash
+cargo install --git https://github.com/KooshaPari/rich-cli-kit rck-cli
+```
+
+Or, with [`cargo-binstall`](https://github.com/cargo-bins/cargo-binstall):
+
+```bash
+cargo binstall --git https://github.com/KooshaPari/rich-cli-kit rck-cli
+```
+
+For local development, see [Quickstart](#quickstart).
+
 ## Components
 
 ```
