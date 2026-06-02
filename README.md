@@ -7,6 +7,8 @@
 
 # rich-cli-kit
 
+[![AI Slop Inside](https://sladge.net/badge.svg)](https://sladge.net)
+
 Inline rich terminal output — images, progress bars, status panels — emitted via
 the [kitty graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)
 when the terminal supports it ([Ghostty](https://ghostty.org/docs/features),
