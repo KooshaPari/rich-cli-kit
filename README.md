@@ -1,3 +1,6 @@
+> **Work state:** ACTIVE · **Progress:** `████████░░ 80%`
+> Terminal-UX toolkit (`rck` + `rck-core` lib + FastMCP server): inline images/progress/panels via kitty-graphics, ASCII fallback. Public + consumed by KLA & thegent-dispatch. Broader adoption ongoing. · updated 2026-06-02
+
 > **Pinned references (Phenotype-org)**
 > - MSRV: see rust-toolchain.toml
 > - cargo-deny config: see deny.toml
