@@ -28,6 +28,6 @@ jobs:
           toolchain: stable
 
       - name: Run cargo-deny
-        uses: EmbarkStudios/cargo-deny-action@f28dad79a1c0736fb9bef3766fec993bb67416c5 # v2
+        uses: EmbarkStudios/cargo-deny-action@bb137d7af7e4fb67e5f82a49c4fce4fad40782fe # v2
         with:
           rust-version: stable
