@@ -19,7 +19,7 @@ tokio = { version = "1.39", features = ["rt", "macros", "io-std", "time", "io-ut
 crossterm = "0.29"
 base64 = "0.22"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
-thiserror = "1.0"
+thiserror = "2.0"
 unicode-width = "0.2"
 unicode-segmentation = "1.12"
 
