@@ -13,6 +13,9 @@ on:
   schedule:
     - cron: '47 6 * * 4'  # weekly Thursday
   workflow_dispatch:
+permissions:
+  contents: read
+
 
 jobs:
   machete:
