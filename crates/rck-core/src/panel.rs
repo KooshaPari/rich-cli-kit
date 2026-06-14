@@ -16,16 +16,41 @@ pub enum BorderStyle {
 }
 
 struct Glyphs {
-    tl: &'static str, tr: &'static str, bl: &'static str, br: &'static str,
-    h: &'static str, v: &'static str,
+    tl: &'static str,
+    tr: &'static str,
+    bl: &'static str,
+    br: &'static str,
+    h: &'static str,
+    v: &'static str,
 }
 
 fn glyphs(caps: &Capabilities, style: BorderStyle) -> Glyphs {
     let unicode = caps.unicode_width >= 2 && !matches!(style, BorderStyle::Ascii);
     match (unicode, style) {
-        (true, BorderStyle::Rounded) => Glyphs { tl: "╭", tr: "╮", bl: "╰", br: "╯", h: "─", v: "│" },
-        (true, BorderStyle::Square)  => Glyphs { tl: "┌", tr: "┐", bl: "└", br: "┘", h: "─", v: "│" },
-        _                            => Glyphs { tl: "+", tr: "+", bl: "+", br: "+", h: "-", v: "|" },
+        (true, BorderStyle::Rounded) => Glyphs {
+            tl: "╭",
+            tr: "╮",
+            bl: "╰",
+            br: "╯",
+            h: "─",
+            v: "│",
+        },
+        (true, BorderStyle::Square) => Glyphs {
+            tl: "┌",
+            tr: "┐",
+            bl: "└",
+            br: "┘",
+            h: "─",
+            v: "│",
+        },
+        _ => Glyphs {
+            tl: "+",
+            tr: "+",
+            bl: "+",
+            br: "+",
+            h: "-",
+            v: "|",
+        },
     }
 }
 
@@ -66,7 +91,9 @@ pub fn emit_panel_spans<W: Write>(
     let title_seg_w = visible_width(&title_segment);
     let remaining = total.saturating_sub(1 + title_seg_w);
     out.write_all(title_segment.as_bytes())?;
-    for _ in 0..remaining { write!(out, "{}", g.h)?; }
+    for _ in 0..remaining {
+        write!(out, "{}", g.h)?;
+    }
     writeln!(out, "{}", g.tr)?;
 
     // Body rows.
@@ -79,7 +106,9 @@ pub fn emit_panel_spans<W: Write>(
 
     // Bottom.
     write!(out, "{}", g.bl)?;
-    for _ in 0..total { write!(out, "{}", g.h)?; }
+    for _ in 0..total {
+        write!(out, "{}", g.h)?;
+    }
     writeln!(out, "{}", g.br)?;
     Ok(())
 }
@@ -91,10 +120,17 @@ mod tests {
 
     fn caps(unicode_width: u16) -> Capabilities {
         Capabilities {
-            graphics: false, sixel: false, truecolor: false,
-            unicode_width, terminal: "test".into(), is_tty: true,
-            hyperlinks: false, clipboard: false, task_markers: false,
-            kitty_keyboard: false, in_tmux: false,
+            graphics: false,
+            sixel: false,
+            truecolor: false,
+            unicode_width,
+            terminal: "test".into(),
+            is_tty: true,
+            hyperlinks: false,
+            clipboard: false,
+            task_markers: false,
+            kitty_keyboard: false,
+            in_tmux: false,
         }
     }
 
@@ -102,7 +138,14 @@ mod tests {
     fn unicode_uses_rounded_corners() {
         let c = caps(2);
         let mut buf = Vec::new();
-        emit_panel(&mut buf, &c, "hello", &["line one", "line two"], BorderStyle::Rounded).unwrap();
+        emit_panel(
+            &mut buf,
+            &c,
+            "hello",
+            &["line one", "line two"],
+            BorderStyle::Rounded,
+        )
+        .unwrap();
         let s = String::from_utf8(buf).unwrap();
         assert!(s.contains("╭"));
         assert!(s.contains("╯"));
@@ -140,10 +183,7 @@ mod tests {
     fn spans_with_link_render() {
         let mut c = caps(2);
         c.hyperlinks = true;
-        let rows = vec![vec![
-            Span::text("see "),
-            Span::link("https://x", "docs"),
-        ]];
+        let rows = vec![vec![Span::text("see "), Span::link("https://x", "docs")]];
         let mut buf = Vec::new();
         emit_panel_spans(&mut buf, &c, "t", &rows, BorderStyle::Square).unwrap();
         let s = String::from_utf8(buf).unwrap();

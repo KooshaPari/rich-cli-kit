@@ -17,6 +17,20 @@ class RckUnavailable(RuntimeError):
     """Raised when the `rck` binary cannot be located."""
 
 
+def _is_runnable(path: str) -> bool:
+    if not os.path.isfile(path):
+        return False
+    if os.name == "nt":
+        return True
+    return os.access(path, os.X_OK)
+
+
+def _candidate_paths(base: str) -> list[str]:
+    if os.name == "nt" and not base.lower().endswith(".exe"):
+        return [base, f"{base}.exe"]
+    return [base]
+
+
 @dataclass
 class Capabilities:
     graphics: bool
@@ -42,16 +56,19 @@ def find_rck() -> str:
     Resolution order: `RCK_BIN` env → `rck` on PATH → debug build in repo.
     """
     env = os.environ.get("RCK_BIN")
-    if env and os.path.isfile(env) and os.access(env, os.X_OK):
-        return env
+    if env:
+        for candidate in _candidate_paths(env):
+            if _is_runnable(candidate):
+                return candidate
     found = shutil.which("rck")
     if found:
         return found
     # Dev fallback — repo-local debug build.
     here = os.path.dirname(os.path.abspath(__file__))
-    candidate = os.path.normpath(os.path.join(here, "..", "..", "target", "debug", "rck"))
-    if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
-        return candidate
+    base = os.path.normpath(os.path.join(here, "..", "..", "target", "debug", "rck"))
+    for candidate in _candidate_paths(base):
+        if _is_runnable(candidate):
+            return candidate
     raise RckUnavailable(
         "`rck` binary not found. Install with `cargo build --release` in rich-cli-kit/ "
         "or set RCK_BIN."

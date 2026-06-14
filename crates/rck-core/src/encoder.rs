@@ -96,7 +96,10 @@ mod tests {
         let s = String::from_utf8_lossy(&buf);
 
         // First frame must carry a=T,f=100 AND m=1 (not m=0).
-        assert!(s.contains("\x1b_Ga=T,f=100,q=2,m=1;"), "missing first-chunk header");
+        assert!(
+            s.contains("\x1b_Ga=T,f=100,q=2,m=1;"),
+            "missing first-chunk header"
+        );
         // Last frame must be m=0.
         assert!(s.contains("\x1b_Gm=0;"), "missing final-chunk header");
         // Must end with APC terminator + newline.
