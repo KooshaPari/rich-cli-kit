@@ -201,9 +201,6 @@ mod tests {
 
     #[test]
     fn task_marker_empty_when_unsupported() {
-        assert_eq!(
-            emit_task_markers(false, false, TaskPhase::PromptStart),
-            ""
-        );
+        assert_eq!(emit_task_markers(false, false, TaskPhase::PromptStart), "");
     }
 }

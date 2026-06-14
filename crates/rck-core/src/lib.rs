@@ -22,8 +22,8 @@ pub mod width;
 
 pub use capabilities::{detect, Capabilities};
 pub use emit::{
-    emit_clipboard, emit_hyperlink, emit_task_markers, in_tmux, wrap_for_tmux,
-    wrap_for_tmux_with, TaskPhase,
+    emit_clipboard, emit_hyperlink, emit_task_markers, in_tmux, wrap_for_tmux, wrap_for_tmux_with,
+    TaskPhase,
 };
 pub use image_data::ImageData;
 pub use interactive::{ask, input, pick, Outcome};
@@ -34,7 +34,11 @@ pub use spans::{render_spans, Span};
 use std::io::Write;
 
 /// High-level convenience: write an image to `out` using the best mode for `caps`.
-pub fn emit_image<W: Write>(out: &mut W, caps: &Capabilities, img: &ImageData) -> anyhow::Result<()> {
+pub fn emit_image<W: Write>(
+    out: &mut W,
+    caps: &Capabilities,
+    img: &ImageData,
+) -> anyhow::Result<()> {
     if caps.graphics {
         encoder::write_kitty_png(out, &img.png_bytes)
     } else {

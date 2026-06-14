@@ -54,7 +54,11 @@ impl TermGuard {
             false
         };
         let _ = stdout.flush();
-        Ok(TermGuard { raw, altscreen, pushed_kbd })
+        Ok(TermGuard {
+            raw,
+            altscreen,
+            pushed_kbd,
+        })
     }
 }
 
@@ -128,7 +132,9 @@ pub fn ask(caps: &Capabilities, question: &str) -> io::Result<Outcome<bool>> {
             return Ok(Outcome::Cancelled);
         };
         match key.code {
-            KeyCode::Up | KeyCode::Down | KeyCode::Left | KeyCode::Right | KeyCode::Tab => yes = !yes,
+            KeyCode::Up | KeyCode::Down | KeyCode::Left | KeyCode::Right | KeyCode::Tab => {
+                yes = !yes
+            }
             KeyCode::Char('y') | KeyCode::Char('Y') => return Ok(Outcome::Selected(true)),
             KeyCode::Char('n') | KeyCode::Char('N') => return Ok(Outcome::Selected(false)),
             KeyCode::Enter => return Ok(Outcome::Selected(yes)),
@@ -178,7 +184,11 @@ pub fn pick(caps: &Capabilities, prompt: &str, choices: &[String]) -> io::Result
         };
         match key.code {
             KeyCode::Up => {
-                if idx == 0 { idx = choices.len() - 1 } else { idx -= 1 }
+                if idx == 0 {
+                    idx = choices.len() - 1
+                } else {
+                    idx -= 1
+                }
             }
             KeyCode::Down => {
                 idx = (idx + 1) % choices.len();
@@ -238,7 +248,9 @@ pub fn input(caps: &Capabilities, prompt: &str) -> io::Result<Outcome<String>> {
         match key.code {
             KeyCode::Enter => return Ok(Outcome::Selected(buf)),
             KeyCode::Esc => return Ok(Outcome::Cancelled),
-            KeyCode::Backspace => { buf.pop(); }
+            KeyCode::Backspace => {
+                buf.pop();
+            }
             KeyCode::Char(c) => {
                 // Ignore Ctrl-<letter> combos as text input.
                 if key.modifiers.contains(KeyModifiers::CONTROL) {
@@ -271,10 +283,17 @@ mod tests {
 
     fn non_interactive_caps() -> Capabilities {
         Capabilities {
-            graphics: false, sixel: false, truecolor: false, unicode_width: 1,
-            terminal: "test".into(), is_tty: false,
-            hyperlinks: false, clipboard: false, task_markers: false,
-            kitty_keyboard: false, in_tmux: false,
+            graphics: false,
+            sixel: false,
+            truecolor: false,
+            unicode_width: 1,
+            terminal: "test".into(),
+            is_tty: false,
+            hyperlinks: false,
+            clipboard: false,
+            task_markers: false,
+            kitty_keyboard: false,
+            in_tmux: false,
         }
     }
 
@@ -341,9 +360,13 @@ mod tests {
         // "yes" → true. We encode the logic here as a sanity check.
         fn classify(s: &str) -> Outcome<bool> {
             let t = s.trim().to_ascii_lowercase();
-            if t.is_empty() { Outcome::Cancelled }
-            else if t.starts_with('y') { Outcome::Selected(true) }
-            else { Outcome::Selected(false) }
+            if t.is_empty() {
+                Outcome::Cancelled
+            } else if t.starts_with('y') {
+                Outcome::Selected(true)
+            } else {
+                Outcome::Selected(false)
+            }
         }
         assert_eq!(classify("y"), Outcome::Selected(true));
         assert_eq!(classify("N"), Outcome::Selected(false));

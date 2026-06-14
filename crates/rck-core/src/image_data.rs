@@ -19,8 +19,11 @@ impl ImageData {
         let width = img.width();
         let height = img.height();
         let mut png_bytes = Vec::new();
-        img.write_to(&mut std::io::Cursor::new(&mut png_bytes), image::ImageFormat::Png)
-            .context("re-encoding image as PNG")?;
+        img.write_to(
+            &mut std::io::Cursor::new(&mut png_bytes),
+            image::ImageFormat::Png,
+        )
+        .context("re-encoding image as PNG")?;
         Ok(ImageData {
             png_bytes,
             width,
@@ -31,6 +34,11 @@ impl ImageData {
 
     /// Construct from raw PNG bytes (no re-encoding; width/height must be provided).
     pub fn from_png(png_bytes: Vec<u8>, width: u32, height: u32, alt: Option<String>) -> Self {
-        ImageData { png_bytes, width, height, alt_text: alt }
+        ImageData {
+            png_bytes,
+            width,
+            height,
+            alt_text: alt,
+        }
     }
 }

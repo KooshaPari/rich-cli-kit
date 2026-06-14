@@ -24,7 +24,10 @@ impl Span {
     }
 
     pub fn link<U: Into<String>, T: Into<String>>(url: U, text: T) -> Self {
-        Span::Link { url: url.into(), text: text.into() }
+        Span::Link {
+            url: url.into(),
+            text: text.into(),
+        }
     }
 
     /// The visible text of this span (no escape sequences).
@@ -39,9 +42,7 @@ impl Span {
     pub fn render(&self, caps: &Capabilities) -> String {
         match self {
             Span::Text { text } => text.clone(),
-            Span::Link { url, text } => {
-                emit_hyperlink(caps.hyperlinks, caps.in_tmux, url, text)
-            }
+            Span::Link { url, text } => emit_hyperlink(caps.hyperlinks, caps.in_tmux, url, text),
         }
     }
 }
@@ -72,9 +73,16 @@ mod tests {
 
     fn caps(hyperlinks: bool) -> Capabilities {
         Capabilities {
-            graphics: false, sixel: false, truecolor: false, unicode_width: 2,
-            terminal: "test".into(), is_tty: true,
-            hyperlinks, clipboard: false, task_markers: false, kitty_keyboard: false,
+            graphics: false,
+            sixel: false,
+            truecolor: false,
+            unicode_width: 2,
+            terminal: "test".into(),
+            is_tty: true,
+            hyperlinks,
+            clipboard: false,
+            task_markers: false,
+            kitty_keyboard: false,
             in_tmux: false,
         }
     }
