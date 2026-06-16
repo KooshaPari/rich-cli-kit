@@ -90,9 +90,10 @@ jobs:
             echo "phenotype-journey: $(phenotype-journey --version 2>/dev/null || phenotype-journey --help 2>&1 | head -1)"
           else
             echo "Installing phenotype-journey..."
-            # Install via cargo if available, else download binary
+            # Install via cargo from the source repository (not published on crates.io).
+            # The CLI lives in KooshaPari/phenotype-journeys at bin/phenotype-journey.
             if command -v cargo &>/dev/null; then
-              cargo install phenotype-journey --locked \
+              cargo install --git https://github.com/KooshaPari/phenotype-journeys.git --bin phenotype-journey --locked \
                 || { echo "ERROR: phenotype-journey install failed"; exit 1; }
             else
               # Download latest release binary (adjust URL as needed)
