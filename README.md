@@ -1,3 +1,5 @@
+<!-- work-state: Phase 3 spec+test+trace -->
+[████████░░] 80% — spec+test+trace layer
 <!-- WORK-STATE:START -->
 > **Phase 3: Spec+Test+Traceability Layer** · **Status:** COMPLETE  
 > **Branch:** feat/phase3-spec-test-trace · **Date:** 2026-06-15  
