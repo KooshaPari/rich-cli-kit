@@ -30,23 +30,24 @@ pub fn default_install_dir() -> Result<PathBuf> {
         return Ok(PathBuf::from(xdg).join("ghostty").join("shaders"));
     }
     let home = std::env::var("HOME").map_err(|_| anyhow!("HOME env var not set"))?;
-    Ok(PathBuf::from(home).join(".config").join("ghostty").join("shaders"))
+    Ok(PathBuf::from(home)
+        .join(".config")
+        .join("ghostty")
+        .join("shaders"))
 }
 
 /// Install the shader `name` into `dir` (falls back to [`default_install_dir`]
 /// when `None`). Returns the full path written.
 pub fn install(name: &str, dir: Option<&Path>) -> Result<PathBuf> {
-    let contents = bundled(name)
-        .ok_or_else(|| anyhow!("unknown shader: {name}. known: {:?}", list()))?;
+    let contents =
+        bundled(name).ok_or_else(|| anyhow!("unknown shader: {name}. known: {:?}", list()))?;
     let dir = match dir {
         Some(d) => d.to_path_buf(),
         None => default_install_dir()?,
     };
-    std::fs::create_dir_all(&dir)
-        .with_context(|| format!("creating {}", dir.display()))?;
+    std::fs::create_dir_all(&dir).with_context(|| format!("creating {}", dir.display()))?;
     let dest = dir.join(format!("{name}.glsl"));
-    std::fs::write(&dest, contents)
-        .with_context(|| format!("writing {}", dest.display()))?;
+    std::fs::write(&dest, contents).with_context(|| format!("writing {}", dest.display()))?;
     Ok(dest)
 }
 

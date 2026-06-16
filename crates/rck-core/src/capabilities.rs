@@ -61,28 +61,33 @@ pub fn detect() -> Capabilities {
     let kitty = env::var("KITTY_WINDOW_ID").is_ok();
     let konsole = env::var("KONSOLE_VERSION").is_ok();
 
-    let terminal = if term_program == "ghostty" || term_program == "Ghostty" || term == "xterm-ghostty" {
-        "ghostty"
-    } else if kitty || term.contains("kitty") {
-        "kitty"
-    } else if wezterm || term_program == "WezTerm" {
-        "wezterm"
-    } else if term_program == "iTerm.app" {
-        "iterm2"
-    } else if konsole {
-        "konsole"
-    } else if !term.is_empty() {
-        term.as_str()
-    } else {
-        "unknown"
-    }
-    .to_string();
+    let terminal =
+        if term_program == "ghostty" || term_program == "Ghostty" || term == "xterm-ghostty" {
+            "ghostty"
+        } else if kitty || term.contains("kitty") {
+            "kitty"
+        } else if wezterm || term_program == "WezTerm" {
+            "wezterm"
+        } else if term_program == "iTerm.app" {
+            "iterm2"
+        } else if konsole {
+            "konsole"
+        } else if !term.is_empty() {
+            term.as_str()
+        } else {
+            "unknown"
+        }
+        .to_string();
 
     // Env-based inference first (these are known-good).
     let mut graphics = matches!(terminal.as_str(), "ghostty" | "kitty" | "wezterm");
     let sixel = matches!(terminal.as_str(), "konsole" | "iterm2" | "wezterm");
     let truecolor = colorterm == "truecolor" || colorterm == "24bit" || graphics;
-    let unicode_width: u16 = if term == "dumb" || term.is_empty() { 1 } else { 2 };
+    let unicode_width: u16 = if term == "dumb" || term.is_empty() {
+        1
+    } else {
+        2
+    };
 
     // If TTY and not yet confirmed, try the kitty-graphics query.
     if is_tty && !graphics {
@@ -99,21 +104,31 @@ pub fn detect() -> Capabilities {
     // Modern-terminal OSC features: hyperlinks (OSC 8), task markers (OSC 133),
     // kitty-kbd are supported by the same family as graphics. Apple Terminal
     // supports NONE of them. OSC 52 clipboard is more widely supported.
-    let modern = matches!(terminal.as_str(), "ghostty" | "kitty" | "wezterm" | "iterm2");
+    let modern = matches!(
+        terminal.as_str(),
+        "ghostty" | "kitty" | "wezterm" | "iterm2"
+    );
     let apple = term_program == "Apple_Terminal";
     let hyperlinks = modern && !apple;
     let task_markers = modern && !apple;
     let kitty_keyboard = matches!(terminal.as_str(), "ghostty" | "kitty" | "wezterm");
     // Clipboard write is broadly supported — add konsole + Apple Terminal (with a tiny limit).
-    let clipboard = modern
-        || matches!(terminal.as_str(), "konsole")
-        || apple;
+    let clipboard = modern || matches!(terminal.as_str(), "konsole") || apple;
 
     let in_tmux = std::env::var("TMUX").is_ok();
 
     Capabilities {
-        graphics, sixel, truecolor, unicode_width, terminal, is_tty,
-        hyperlinks, clipboard, task_markers, kitty_keyboard, in_tmux,
+        graphics,
+        sixel,
+        truecolor,
+        unicode_width,
+        terminal,
+        is_tty,
+        hyperlinks,
+        clipboard,
+        task_markers,
+        kitty_keyboard,
+        in_tmux,
     }
 }
 
@@ -166,7 +181,7 @@ fn query_kitty_graphics(timeout: Duration) -> io::Result<bool> {
         }
         buf.extend_from_slice(&chunk[..n]);
         // Stop once we see the primary-DA terminator `c` after `ESC [`.
-        if buf.windows(2).any(|w| w == b"[?" ) && buf.contains(&b'c') {
+        if buf.windows(2).any(|w| w == b"[?") && buf.contains(&b'c') {
             break;
         }
     }
@@ -182,16 +197,28 @@ fn query_kitty_graphics(timeout: Duration) -> io::Result<bool> {
 
 #[cfg(unix)]
 unsafe fn libc_write(fd: i32, buf: &[u8]) -> io::Result<usize> {
-    extern "C" { fn write(fd: i32, buf: *const u8, count: usize) -> isize; }
+    extern "C" {
+        fn write(fd: i32, buf: *const u8, count: usize) -> isize;
+    }
     let n = write(fd, buf.as_ptr(), buf.len());
-    if n < 0 { Err(io::Error::last_os_error()) } else { Ok(n as usize) }
+    if n < 0 {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(n as usize)
+    }
 }
 
 #[cfg(unix)]
 unsafe fn libc_read(fd: i32, buf: &mut [u8]) -> io::Result<usize> {
-    extern "C" { fn read(fd: i32, buf: *mut u8, count: usize) -> isize; }
+    extern "C" {
+        fn read(fd: i32, buf: *mut u8, count: usize) -> isize;
+    }
     let n = read(fd, buf.as_mut_ptr(), buf.len());
-    if n < 0 { Err(io::Error::last_os_error()) } else { Ok(n as usize) }
+    if n < 0 {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(n as usize)
+    }
 }
 
 #[cfg(unix)]
@@ -201,17 +228,31 @@ struct Termios([u8; 256]); // oversized opaque buffer; we only round-trip it.
 
 #[cfg(unix)]
 fn get_termios(fd: i32) -> io::Result<Termios> {
-    extern "C" { fn tcgetattr(fd: i32, termios: *mut u8) -> i32; }
+    extern "C" {
+        fn tcgetattr(fd: i32, termios: *mut u8) -> i32;
+    }
     let mut t = Termios([0u8; 256]);
     let rc = unsafe { tcgetattr(fd, t.0.as_mut_ptr()) };
-    if rc != 0 { Err(io::Error::last_os_error()) } else { Ok(t) }
+    if rc != 0 {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(t)
+    }
 }
 
 #[cfg(unix)]
 fn set_termios(fd: i32, t: &Termios) -> io::Result<()> {
-    extern "C" { fn tcsetattr(fd: i32, actions: i32, termios: *const u8) -> i32; }
-    let rc = unsafe { tcsetattr(fd, 0 /* TCSANOW */, t.0.as_ptr()) };
-    if rc != 0 { Err(io::Error::last_os_error()) } else { Ok(()) }
+    extern "C" {
+        fn tcsetattr(fd: i32, actions: i32, termios: *const u8) -> i32;
+    }
+    let rc = unsafe {
+        tcsetattr(fd, 0 /* TCSANOW */, t.0.as_ptr())
+    };
+    if rc != 0 {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(())
+    }
 }
 
 #[cfg(unix)]
@@ -230,18 +271,30 @@ fn poll_readable(fd: i32, timeout: Duration) -> io::Result<bool> {
         fn poll(fds: *mut PollFd, nfds: u64, timeout: i32) -> i32;
     }
     #[repr(C)]
-    struct PollFd { fd: i32, events: i16, revents: i16 }
-    let mut pfd = PollFd { fd, events: 0x0001 /* POLLIN */, revents: 0 };
+    struct PollFd {
+        fd: i32,
+        events: i16,
+        revents: i16,
+    }
+    let mut pfd = PollFd {
+        fd,
+        events: 0x0001, /* POLLIN */
+        revents: 0,
+    };
     let ms = timeout.as_millis().min(i32::MAX as u128) as i32;
     let rc = unsafe { poll(&mut pfd as *mut PollFd, 1, ms) };
     Ok(rc > 0)
 }
 
 #[cfg(not(unix))]
-fn query_kitty_graphics(_timeout: Duration) -> io::Result<bool> { Ok(false) }
+fn query_kitty_graphics(_timeout: Duration) -> io::Result<bool> {
+    Ok(false)
+}
 
 #[allow(dead_code)]
-fn _touch_write_import(w: &mut dyn Write) { let _ = w; }
+fn _touch_write_import(w: &mut dyn Write) {
+    let _ = w;
+}
 
 #[cfg(test)]
 mod tests {

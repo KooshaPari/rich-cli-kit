@@ -10,15 +10,19 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use rck_core::{
     ask, detect, emit_clipboard, emit_hyperlink, emit_image, emit_panel, emit_progress,
-    emit_task_markers, in_tmux, input, pick, shader, BorderStyle, Capabilities, ImageData,
-    Outcome, ProgressStyle, TaskPhase,
+    emit_task_markers, in_tmux, input, pick, shader, BorderStyle, Capabilities, ImageData, Outcome,
+    ProgressStyle, TaskPhase,
 };
 use std::fs;
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[command(name = "rck", version, about = "Rich-CLI Kit — inline images, progress bars, status panels, OSC 8 links, OSC 52 clipboard, OSC 133 task markers, and alt-screen interactive primitives")]
+#[command(
+    name = "rck",
+    version,
+    about = "Rich-CLI Kit — inline images, progress bars, status panels, OSC 8 links, OSC 52 clipboard, OSC 133 task markers, and alt-screen interactive primitives"
+)]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,
@@ -52,10 +56,7 @@ enum Cmd {
         border: String,
     },
     /// Emit an OSC 8 hyperlink (clickable in Ghostty / kitty / WezTerm / iTerm2).
-    Link {
-        url: String,
-        text: String,
-    },
+    Link { url: String, text: String },
     /// Copy content to the system clipboard via OSC 52. With --stdin, reads stdin.
     Copy {
         /// Content to copy. Use --stdin to read from stdin instead.
@@ -75,18 +76,14 @@ enum Cmd {
         exit: i32,
     },
     /// Yes/no confirm (alt-screen + kitty-kbd, plain-stdin fallback). Exits 0=yes, 1=no, 2=cancel.
-    Ask {
-        question: String,
-    },
+    Ask { question: String },
     /// Single-choice picker. Prints selection on stdout.
     Pick {
         prompt: String,
         choices: Vec<String>,
     },
     /// Single-line input. Prints entered value on stdout.
-    Input {
-        prompt: String,
-    },
+    Input { prompt: String },
     /// Manage the bundled Ghostty shader pack.
     Shader {
         #[command(subcommand)]
@@ -122,14 +119,28 @@ fn main() -> Result<()> {
         Cmd::Image { path, alt } => {
             let mut img = ImageData::from_path(&path)
                 .with_context(|| format!("loading image {}", path.display()))?;
-            if let Some(a) = alt { img.alt_text = Some(a); }
+            if let Some(a) = alt {
+                img.alt_text = Some(a);
+            }
             emit_image(&mut out, &caps, &img)?;
         }
-        Cmd::Progress { ratio, label, ascii } => {
-            let style = if ascii { ProgressStyle::Ascii } else { ProgressStyle::Blocks };
+        Cmd::Progress {
+            ratio,
+            label,
+            ascii,
+        } => {
+            let style = if ascii {
+                ProgressStyle::Ascii
+            } else {
+                ProgressStyle::Blocks
+            };
             emit_progress(&mut out, &caps, ratio, style, label.as_deref())?;
         }
-        Cmd::Panel { title, file, border } => {
+        Cmd::Panel {
+            title,
+            file,
+            border,
+        } => {
             let body = read_body(file.as_deref())?;
             let lines: Vec<&str> = body.lines().collect();
             let style = match border.as_str() {
@@ -153,7 +164,9 @@ fn main() -> Result<()> {
             };
             let seq = emit_clipboard(caps.clipboard, caps.in_tmux, &data);
             if seq.is_empty() {
-                eprintln!("[rck copy] clipboard not supported on this terminal; content not copied");
+                eprintln!(
+                    "[rck copy] clipboard not supported on this terminal; content not copied"
+                );
             } else {
                 out.write_all(seq.as_bytes())?;
             }
@@ -171,7 +184,8 @@ fn main() -> Result<()> {
             }
         }
         Cmd::TaskEnd { exit } => {
-            let seq = emit_task_markers(caps.task_markers, caps.in_tmux, TaskPhase::CommandEnd(exit));
+            let seq =
+                emit_task_markers(caps.task_markers, caps.in_tmux, TaskPhase::CommandEnd(exit));
             out.write_all(seq.as_bytes())?;
         }
         Cmd::Ask { question } => {
@@ -249,19 +263,23 @@ fn demo<W: Write>(out: &mut W, caps: &Capabilities) -> Result<()> {
         out,
         caps,
         "status",
-        &[
-            "build: ok",
-            "tests: 12 passed",
-            "graphics: detected",
-        ],
+        &["build: ok", "tests: 12 passed", "graphics: detected"],
         BorderStyle::Rounded,
     )?;
     writeln!(out)?;
 
     writeln!(out, "4) hyperlink: ")?;
-    let s = emit_hyperlink(caps.hyperlinks, caps.in_tmux, "https://ghostty.org", "Ghostty");
+    let s = emit_hyperlink(
+        caps.hyperlinks,
+        caps.in_tmux,
+        "https://ghostty.org",
+        "Ghostty",
+    );
     writeln!(out, "{s}")?;
 
-    writeln!(out, "5) image: (skipped — pass `rck image <path>` to render)")?;
+    writeln!(
+        out,
+        "5) image: (skipped — pass `rck image <path>` to render)"
+    )?;
     Ok(())
 }
