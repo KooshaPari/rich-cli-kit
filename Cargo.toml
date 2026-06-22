@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = ["crates/rck-core", "crates/rck-cli"]
+exclude = ["crates/klipdot"]
 
 [workspace.package]
 rust-version = "1.75"
