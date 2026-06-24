@@ -1,6 +1,8 @@
 name: Doc Links
 on:
   workflow_dispatch:
+  push:
+  pull_request:
 
 permissions:
   contents: read
@@ -8,11 +10,9 @@ permissions:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
-on: [push, pull_request]
 jobs:
   links:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - run: echo "Doc link check (phenotype-tooling integration)"
