@@ -76,9 +76,31 @@ rich-cli-kit/
 ├── crates/
 │   ├── rck-core/        # capability detection + kitty-graphics encoder
 │   └── rck-cli/         # `rck` binary — detect | image | progress | panel | demo
-└── mcp/
-    └── rich_cli_mcp/    # FastMCP server exposing rich.* tools over stdio
+├── mcp/
+│   └── rich_cli_mcp/    # FastMCP server exposing rich.* tools over stdio
+└── vendor/
+    ├── kmobile/         # Vendored KooshaPari/kmobile (CLI/API/MCP for mobile dev)
+    │   ├── crates/
+    │   │   ├── kmobile-core/   # core types, device/project/sim/test managers
+    │   │   ├── kmobile-api/    # HTTP/WebSocket API
+    │   │   ├── kmobile-cli/    # CLI subcommands
+    │   │   └── kmobile-mcp/    # Model-Context-Protocol server
+    │   └── packages/kmobile-overlay/crates/kmobile-bridge/  # bridge layer
+    └── clap-ext/        # vendored KooshaPari/clap-ext (kmobile dependency)
 ```
+
+## Vendored kmobile (formerly KooshaPari/kmobile)
+
+This workspace vendors the `KooshaPari/kmobile` repository under `vendor/kmobile/`
+as part of repo surface reduction (FR-COLLECTION-2026-06). All four core crates
+(`kmobile-core`, `kmobile-api`, `kmobile-cli`, `kmobile-mcp`) plus the
+`kmobile-bridge` overlay crate are wired into the rich-cli-kit workspace and
+build with `cargo check --workspace --all-features`. The transitive
+`KooshaPari/clap-ext` dep is also vendored under `vendor/clap-ext/`.
+
+See `vendor/kmobile/README.md` for the upstream project's documentation and
+`plans/2026-06-20-kmobile-apikit-phenotypebus-eval-v1.md` for the absorption
+plan and dep-mapping rationale.
 
 ## Quickstart
 

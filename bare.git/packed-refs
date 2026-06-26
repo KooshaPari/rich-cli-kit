@@ -1,0 +1,20 @@
+# pack-refs with: peeled fully-peeled sorted 
+6b2f23785ff3fcba7285df2e9b5631abcb8b3cf8 refs/heads/chore/add-trufflehog-2026-05-02
+958ceed11aac2278577c65440aa5906007f5fc6f refs/heads/chore/cliff-adopt-2026-06-11
+7dab231b4348e1b2781db6fc27f65e5788eff2d5 refs/heads/chore/cliff-v2-body-fix-2026-06-11
+5a550b4492e38cb0f6808641518a1e6b43bfa74c refs/heads/chore/cliff-v2-upgrade-2026-06-11
+a2e165e673006878a0b270cb06ee1deaf68f641c refs/heads/chore/governance-bootstrap-2026-05-02
+4286627378c3ddd4ee0436a2a47b908edcae52e6 refs/heads/chore/pin-actions
+341dec759819814d14a3a2481c6d13b1cb94cd23 refs/heads/chore/pre-commit-bootstrap
+3e1060b6e56151329b08513941bad50a4f804fd3 refs/heads/chore/worklog-seed-rich-cli-kit
+2b83f0d60e0ebdcc931113275e59ba2ec7b9440f refs/heads/dependabot/cargo/patches-f797540d0f
+835e7a3449825023a5f6d2760a266209ddeb83ee refs/heads/dependabot/github_actions/ossf/scorecard-action-50757822a4ac41af1c2f5572df4e1c1a5ae50c03
+230f58f38aacad9cc43f6ad9b79be9f4c2a7a082 refs/heads/docs/rich-cli-kit-sladge-current
+619c53a776d3671e93b422eca60a9cb23358340c refs/heads/docs/rich-cli-kit-sladge-current2
+0fc7b4b5faa73106055b4f1d430ed5d181820e82 refs/heads/docs/sladge-badge
+607b7c40e008bb21be4ec6b494861f862cd4ea47 refs/heads/feat/clap-ext-adopt-wave2-2026-06-12
+314f4d7f6298f12c74ef22929bf46b99d872e215 refs/heads/feat/journey-impl
+f532179cc2a54b437d02aa19a44d7f2323f80ef1 refs/heads/main
+e227e1f7e43e9dbd47e98bf46bd198d754e1b15e refs/heads/pr-34
+0756a3e86fae4fbd4ec4f0993862f628079dbd91 refs/heads/pr-34-check
+0756a3e86fae4fbd4ec4f0993862f628079dbd91 refs/heads/pr-34-tmp

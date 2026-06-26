@@ -1,6 +1,16 @@
 [workspace]
 resolver = "2"
-members = ["crates/rck-core", "crates/rck-cli"]
+members = [
+    "crates/rck-core",
+    "crates/rck-cli",
+    "vendor/clap-ext/crates/clap-ext",
+    "vendor/clap-ext/crates/clap-ext-macros",
+    "vendor/kmobile/crates/kmobile-core",
+    "vendor/kmobile/crates/kmobile-api",
+    "vendor/kmobile/crates/kmobile-cli",
+    "vendor/kmobile/crates/kmobile-mcp",
+    "vendor/kmobile/packages/kmobile-overlay/crates/kmobile-bridge",
+]
 
 [workspace.package]
 rust-version = "1.75"
