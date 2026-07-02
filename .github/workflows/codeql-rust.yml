@@ -29,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@2f90a82ab7eece7aa899ce5d384db49efd7337ea # v3
+        uses: github/codeql-action/init@9cea5827c668a1fe7165dbce6e80c3f9cf3f83ac # v3
         with:
           languages: rust
       - name: Autobuild
