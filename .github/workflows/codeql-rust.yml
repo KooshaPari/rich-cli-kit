@@ -33,7 +33,7 @@ jobs:
         with:
           languages: rust
       - name: Autobuild
-        uses: github/codeql-action/autobuild@9cea5827c668a1fe7165dbce6e80c3f9cf3f83ac # v3
+        uses: github/codeql-action/autobuild@313a0b99225f41fe3a5666e8fa7b2d8048c194ec # v3
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@9cea5827c668a1fe7165dbce6e80c3f9cf3f83ac # v3
         with:
